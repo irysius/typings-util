@@ -7,6 +7,9 @@ function isImport(line) {
 function isExport(line) {
     return line.indexOf('export ') === 0;
 }
+/**
+ * Categorize raw contents of a file into imports and exports
+ */
 function parseStatements(lines) {
     var imports = [];
     var exports = [];
@@ -35,11 +38,17 @@ function parseModuleName(fullPath, root) {
     return PATH.relative(root, fullPath).replace('.d.ts', '');
 }
 exports.parseModuleName = parseModuleName;
+/**
+ * Given file contents, return located imports and exports
+ */
 function parseFileContent(content) {
     var lines = content.split(/\r?\n/g);
     return parseStatements(lines);
 }
 exports.parseFileContent = parseFileContent;
+/**
+ * Given a namespace and a module map, create a templating function for generating module text
+ */
 function moduleTemplate(ns, moduleMap) {
     var _processImport = processImport(ns, moduleMap);
     return function (name, fullPath, statements) {
@@ -63,6 +72,7 @@ function processImport(ns, moduleMap) {
         var wd = PATH.dirname(fullPath);
         // Resolve path, and convert to global
         var _a = importLine.split(' from '), pre = _a[0], post = _a[1];
+        // parse ./Module from "./Module"; or './Module';
         var from = post.replace(/['";]/g, '');
         var absPath = PATH.resolve(wd, from) + '.d.ts';
         var absFrom = ns + "/" + moduleMap[absPath];
