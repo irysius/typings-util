@@ -1,7 +1,7 @@
 {
   "name": "@irysius/typings-util",
-  "version": "0.0.2",
-  "description": "Utilities functions to help assemble TypeScript declarations",
+  "version": "0.0.3",
+  "description": "Utility functions to help assemble TypeScript declarations",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
