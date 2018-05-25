@@ -8,8 +8,10 @@
   },
   "author": "Lester Sy <lestersy@hotmail.com> (https://lestersy.io)",
   "license": "MIT",
+  "dependencies": {
+    "@irysius/utils": "^0.1.4"
+  },
   "devDependencies": {
-    "@irysius/utils": "^0.1.4",
     "@types/node": "^10.1.2",
     "gulp": "^3.9.1",
     "typescript": "^2.8.3"
