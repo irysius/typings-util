@@ -31,5 +31,4 @@ function main(typesFolder: string, ns: string, outputFile: string = './index.d.t
     });
 }
 
-// main('./naive-types', '@irysius/grid-math', './index.d.ts');
 export = main;
