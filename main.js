@@ -1,7 +1,7 @@
 "use strict";
 var utils_1 = require("@irysius/utils");
 var helpers_1 = require("./helpers");
-var NEWLINE = '\r\n';
+var NEWLINE = process.env.NEWLINE;
 function main(typesFolder, ns, outputFile) {
     if (outputFile === void 0) { outputFile = './index.d.ts'; }
     return utils_1.fs.listFiles(typesFolder, { recurse: true }).then(function (results) {
