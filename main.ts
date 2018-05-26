@@ -2,7 +2,7 @@ import { fs } from '@irysius/utils';
 import { parseModuleName, moduleTemplate, parseFileContent } from './helpers';
 declare var Promise;
 
-const NEWLINE = process.env.NEWLINE;
+const NEWLINE = '\r\n';
 
 function main(typesFolder: string, ns: string, outputFile: string = './index.d.ts') {
     return fs.listFiles(typesFolder, { recurse: true }).then(results => {

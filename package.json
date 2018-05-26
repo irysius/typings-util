@@ -1,11 +1,11 @@
 {
   "name": "@irysius/typings-util",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Utility functions to help assemble TypeScript declarations",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "gulp publish"
+    "prepare": "gulp prepare"
   },
   "repository": {
     "type": "git",
