@@ -11,3 +11,4 @@ gulp.task('compile', (done) => {
 });
 
 gulp.task('default', ['compile']);
+gulp.task('publish', ['compile']);

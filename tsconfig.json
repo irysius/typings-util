@@ -11,6 +11,6 @@
         "**/*.ts"
     ],
     "exclude": [
-        "naive-types/**/*.*"
+        "tests/**/*.*"
     ]
 }

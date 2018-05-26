@@ -4,12 +4,17 @@
   "description": "Utility functions to help assemble TypeScript declarations",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "gulp publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/irysius/typings-util.git"
   },
   "author": "Lester Sy <lestersy@hotmail.com> (https://lestersy.io)",
   "license": "MIT",
   "dependencies": {
-    "@irysius/utils": "^0.1.4"
+    "@irysius/utils": "0.2.1"
   },
   "devDependencies": {
     "@types/node": "^10.1.2",
