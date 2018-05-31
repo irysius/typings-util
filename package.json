@@ -1,6 +1,6 @@
 {
   "name": "@irysius/typings-util",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Utility functions to help assemble TypeScript declarations",
   "main": "main.js",
   "scripts": {
@@ -20,5 +20,11 @@
     "@types/node": "^10.1.2",
     "gulp": "^3.9.1",
     "typescript": "^2.8.3"
-  }
+  },
+  "files": [
+    "README.md",
+    "main.js",
+    "helpers.js",
+    "index.d.ts"
+  ]
 }
