@@ -1,5 +1,6 @@
 import { fs } from '@irysius/utils';
 import { parseModuleName, moduleTemplate, parseFileContent } from './helpers';
+import * as PATH from 'path';
 declare var Promise;
 
 const NEWLINE = '\r\n';
@@ -7,8 +8,10 @@ const NEWLINE = '\r\n';
 function main(typesFolder: string, ns: string, outputFile: string = './index.d.ts') {
     return fs.listFiles(typesFolder, { recurse: true }).then(results => {
         let paths = results.map(x => x.path);
-        let moduleNames = paths.map(p => parseModuleName(p, typesFolder));
-    
+        let moduleNames = paths
+            .map(p => parseModuleName(p, typesFolder))
+            .map(p => p.split(PATH.sep).join('/')); // Need to enforce / as separator.
+
         // Create a map of absolute file paths to module names.
         let moduleMap = {};
         paths.forEach((path, i) => {
