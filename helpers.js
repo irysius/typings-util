@@ -75,8 +75,16 @@ function processImport(ns, moduleMap) {
         let [pre, post] = importLine.split(' from ');
         // parse ./Module from "./Module"; or './Module';
         let from = post.replace(/['";]/g, '');
-        let absPath = PATH.resolve(wd, from) + '.d.ts';
-        let absFrom = `${ns}/${moduleMap[absPath]}`;
+        let absFrom;
+        if (from.startsWith('.')) {
+            // relative require, like ./Module
+            let absPath = PATH.resolve(wd, from) + '.d.ts';
+            absFrom = `${ns}/${moduleMap[absPath]}`;
+        }
+        else {
+            // absolute require, like express
+            absFrom = from;
+        }
         return `${pre} from "${absFrom}";`;
     };
 }
