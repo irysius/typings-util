@@ -14,7 +14,7 @@
   "author": "Lester Sy <lestersy@hotmail.com> (https://lestersy.io)",
   "license": "MIT",
   "dependencies": {
-    "@irysius/utils": "0.2.1"
+    "@irysius/utils": "0.2.2"
   },
   "devDependencies": {
     "@types/node": "^10.1.2",

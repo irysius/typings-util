@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var PATH = require("path");
+const PATH = require("path");
 function isImport(line) {
     return line.indexOf('import ') === 0;
 }
@@ -11,10 +11,10 @@ function isExport(line) {
  * Categorize raw contents of a file into imports and exports
  */
 function parseStatements(lines) {
-    var imports = [];
-    var exports = [];
-    var currentExport = [];
-    lines.forEach(function (line) {
+    let imports = [];
+    let exports = [];
+    let currentExport = [];
+    lines.forEach(line => {
         if (line) { // remove empty lines
             if (isImport(line)) {
                 imports.push(line);
@@ -29,9 +29,9 @@ function parseStatements(lines) {
         }
     });
     exports.push(currentExport);
-    exports = exports.filter(function (x) { return x.length > 0; });
+    exports = exports.filter(x => x.length > 0);
     return {
-        imports: imports, exports: exports
+        imports, exports
     };
 }
 function parseModuleName(fullPath, root) {
@@ -42,7 +42,7 @@ exports.parseModuleName = parseModuleName;
  * Given file contents, return located imports and exports
  */
 function parseFileContent(content) {
-    var lines = content.split(/\r?\n/g);
+    let lines = content.split(/\r?\n/g);
     return parseStatements(lines);
 }
 exports.parseFileContent = parseFileContent;
@@ -50,45 +50,47 @@ exports.parseFileContent = parseFileContent;
  * Given a namespace and a module map, create a templating function for generating module text
  */
 function moduleTemplate(ns, moduleMap) {
-    var _processImport = processImport(ns, moduleMap);
+    let _processImport = processImport(ns, moduleMap);
     return function (name, fullPath, statements) {
-        var _imports = statements.imports.map(function (i) { return _processImport(i, fullPath); }).map(tab);
-        var _exports = flatMap(statements.exports.map(processExport)).map(tab);
-        var _name = name === 'index'
-            ? '' : "/" + name;
+        let _imports = statements.imports.map(i => _processImport(i, fullPath)).map(tab);
+        let _exports = flatMap(statements.exports.map(processExport)).map(tab);
+        let _name = name === 'index'
+            ? '' : `/${name}`;
         return [
-            "declare module \"" + ns + _name + "\" {"
-        ].concat(_imports, _exports, [
-            "}"
-        ]);
+            `declare module "${ns}${_name}" {`,
+            ..._imports,
+            ..._exports,
+            `}`
+        ];
     };
 }
 exports.moduleTemplate = moduleTemplate;
 function tab(line) {
-    return "    " + line;
+    return `    ${line}`;
 }
 function processImport(ns, moduleMap) {
     return function (importLine, fullPath) {
-        var wd = PATH.dirname(fullPath);
+        let wd = PATH.dirname(fullPath);
         // Resolve path, and convert to global
-        var _a = importLine.split(' from '), pre = _a[0], post = _a[1];
+        let [pre, post] = importLine.split(' from ');
         // parse ./Module from "./Module"; or './Module';
-        var from = post.replace(/['";]/g, '');
-        var absPath = PATH.resolve(wd, from) + '.d.ts';
-        var absFrom = ns + "/" + moduleMap[absPath];
-        return pre + " from \"" + absFrom + "\";";
+        let from = post.replace(/['";]/g, '');
+        let absPath = PATH.resolve(wd, from) + '.d.ts';
+        let absFrom = `${ns}/${moduleMap[absPath]}`;
+        return `${pre} from "${absFrom}";`;
     };
 }
 function processExport(exportLines) {
-    var firstLine = exportLines[0], otherLines = exportLines.slice(1);
+    let [firstLine, ...otherLines] = exportLines;
     return [
-        firstLine.replace(' declare ', ' ')
-    ].concat(otherLines);
+        firstLine.replace(' declare ', ' '),
+        ...otherLines
+    ];
 }
 function flatMap(v) {
-    var results = [];
-    v.forEach(function (x) {
-        x.forEach(function (l) {
+    let results = [];
+    v.forEach(x => {
+        x.forEach(l => {
             results.push(l);
         });
     });
