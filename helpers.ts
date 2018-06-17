@@ -6,6 +6,10 @@ function isImport(line: string) {
 function isExport(line: string) {
     return line.indexOf('export ') === 0;
 }
+function isExportFrom(line: string) {
+    return line.indexOf('export ') === 0 &&
+        line.indexOf(' from ') > -1;
+}
 
 interface IStatements {
     imports: string[];
@@ -24,7 +28,7 @@ function parseStatements(lines: string[]): IStatements {
     let currentExport: string[] = [];
     lines.forEach(line => {
         if (line) { // remove empty lines
-            if (isImport(line)) {
+            if (isImport(line) || isExportFrom(line)) {
                 imports.push(line);
             } else if (isExport(line)) {
                 exports.push(currentExport);

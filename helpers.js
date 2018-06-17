@@ -7,6 +7,10 @@ function isImport(line) {
 function isExport(line) {
     return line.indexOf('export ') === 0;
 }
+function isExportFrom(line) {
+    return line.indexOf('export ') === 0 &&
+        line.indexOf(' from ') > -1;
+}
 /**
  * Categorize raw contents of a file into imports and exports
  */
@@ -16,7 +20,7 @@ function parseStatements(lines) {
     let currentExport = [];
     lines.forEach(line => {
         if (line) { // remove empty lines
-            if (isImport(line)) {
+            if (isImport(line) || isExportFrom(line)) {
                 imports.push(line);
             }
             else if (isExport(line)) {
