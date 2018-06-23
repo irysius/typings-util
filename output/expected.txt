@@ -1,0 +1,280 @@
+declare module "@irysius/grid-math/Cell" {
+    import { ISize } from "@irysius/grid-math/Rect";
+    export interface ICellOffset {
+        x: number;
+        y: number;
+    }
+    export enum Gravity {
+        Center = 0,
+        North = 1,
+        South = 2,
+        East = 4,
+        West = 8,
+        NorthEast = 5,
+        NorthWest = 9,
+        SouthEast = 6,
+        SouthWest = 10,
+    }
+    export function northOrSouth(gravity: Gravity): Gravity;
+    export function eastOrWest(gravity: Gravity): Gravity;
+    export function cellOffset(cellSize: ISize, gravity: Gravity): ICellOffset;
+}
+declare module "@irysius/grid-math/CellCoord" {
+    import { IVector2 } from "@irysius/grid-math/Vector2";
+    export const TYPE: 'cell';
+    export interface ICellCoord extends IVector2 {
+        type: 'cell';
+    }
+    export function create(x: number, y: number): ICellCoord;
+}
+declare module "@irysius/grid-math/ControllerRouter" {
+    import { ILogger } from "@irysius/utils";
+    import * as express from "express";
+    export interface IControllerRouterOptions {
+        express: typeof express;
+        logger?: ILogger;
+    }
+    export function ControllerRouter(options: IControllerRouterOptions): {
+        setup: (app: express.Application, rootFolder: string) => {};
+    };
+    export default ControllerRouter;
+}
+declare module "@irysius/grid-math/CoordManager" {
+    import { IVector2 } from "@irysius/grid-math/Vector2";
+    import { IScreenPosition } from "@irysius/grid-math/ScreenPosition";
+    import { IWorldPosition } from "@irysius/grid-math/WorldPosition";
+    import { ICellCoord } from "@irysius/grid-math/CellCoord";
+    import { ISize } from "@irysius/grid-math/Rect";
+    import { IScreenRect } from "@irysius/grid-math/ScreenRect";
+    import { ICellOffset } from "@irysius/grid-math/Cell";
+    export interface IState {
+        cellSize: ISize;
+        /**
+         *
+         */
+        cellOffset: ICellOffset;
+        gridBounds: IScreenRect;
+        position: IWorldPosition;
+    }
+    export interface IOptions {
+        state: IState;
+    }
+    export interface ICoordManager {
+        updateWithState(newState: Partial<IState>): void;
+        toWorldPosition(v: IVector2): IWorldPosition;
+        toScreenPosition(v: IVector2): IScreenPosition;
+        toCellCoord(v: IVector2): ICellCoord;
+        getWorldTopLeft(): IWorldPosition;
+    }
+    export function CoordManager(options: IOptions): ICoordManager;
+}
+declare module "@irysius/grid-math/ErrorHandler" {
+    import * as express from "express";
+    export function controller(req: express.Request, res: express.Response): (error: Error) => void;
+    export function socket(done: any): (error: Error) => void;
+}
+declare module "@irysius/grid-math/GridPosition" {
+    import { IVector2 } from "@irysius/grid-math/Vector2";
+    export interface IGridPosition extends IVector2 {
+        type: 'grid';
+    }
+    export function create(x: number, y: number): IGridPosition;
+}
+declare module "@irysius/grid-math/helpers" {
+    import * as express from "express";
+    export interface IMap<T = any> {
+        [key: string]: T;
+    }
+    export interface IRequestHandler {
+        (req: express.Request, res: express.Response, next?: express.NextFunction): void;
+    }
+    export interface IExtendedRequest extends express.Request {
+        [key: string]: any;
+    }
+    export interface IController {
+        options: {
+            name: string;
+        };
+        [route: string]: IRequestHandler | any;
+    }
+    export interface IHub {
+        options: {
+            name: string;
+        };
+        connect(socket: any): void;
+        send: IMap<Function>;
+        receive: IMap<Function>;
+        disconnect(socket: any): void;
+    }
+}
+declare module "@irysius/grid-math/Hub" {
+    import * as io from "socket.io";
+    type HubSendFilter = string;
+    export interface HubTemplate<R = any, S = any> {
+        options?: {
+            name?: string;
+        };
+        /**
+         * On connect, the socket that connected will be passed, perform any initialization code here.
+         */
+        connect(this: HubSend<S>, socket: io.Socket): void;
+        /**
+         * send should be a hash of types, keyed by the expected method name.
+         */
+        sendTypes: S;
+        /**
+         * receive should be a hash of functions that will be called when the server gets a message from the client.
+         */
+        receive: HubReceive<R, S>;
+        /**
+         * On disconnect, the socket that disconnected will be passed, perform any cleanup code here.
+         */
+        disconnect(this: HubSend<S>, socket: io.Socket, reason: string): void;
+    }
+    export interface Hub<R = any, S = any> extends HubTemplate<R, S> {
+        send: HubSend<S>;
+    }
+    export type HubSend<S = any> = {
+        [P in keyof S]: (payload: S[P], roomOrId?: HubSendFilter) => void;
+    };
+    export type HubReceive<R = any, S = any> = {
+        [P in keyof R]: (this: HubSend<S>, data: R[P], socket: io.Socket) => void;
+    };
+    /**
+     * Method used to activate a Hub template and make the template "live".
+     * @param template The base Hub template to turn "active". Expect the `connect`, `disconnect`, and `receive` functions to be "live" after augment.
+     * @param io A socket.io server that's used to create the hub.
+     * @returns A HubSend object, tagged with the methods you can use to send data to the client.
+     */
+    export function augmentHub<R, S>(template: HubTemplate<R, S>, io: io.Server, name?: string): HubSend<S>;
+    export {};
+}
+declare module "@irysius/grid-math/HubRouter" {
+    import { ILogger } from "@irysius/utils";
+    import { IHub, IMap } from "@irysius/grid-math/helpers";
+    import * as io from "socket.io";
+    export interface IHubRouterOptions {
+        io: io.Server;
+        logger?: ILogger;
+    }
+    export function HubRouter(options: IHubRouterOptions): {
+        setup: (rootFolder: string) => IMap<IHub>;
+    };
+    export default HubRouter;
+}
+declare module "@irysius/grid-math" {
+    import * as _Cell from "@irysius/grid-math/Cell";
+    import * as _CellCoord from "@irysius/grid-math/CellCoord";
+    import * as _CoordManager from "@irysius/grid-math/CoordManager";
+    import * as _GridPosition from "@irysius/grid-math/GridPosition";
+    import * as _Rect from "@irysius/grid-math/Rect";
+    import * as _ScreenPosition from "@irysius/grid-math/ScreenPosition";
+    import * as _ScreenRect from "@irysius/grid-math/ScreenRect";
+    import * as _Vector2 from "@irysius/grid-math/Vector2";
+    import * as _WorldPosition from "@irysius/grid-math/WorldPosition";
+    import * as _WorldRect from "@irysius/grid-math/WorldRect";
+    import _ControllerRouter from "@irysius/grid-math/ControllerRouter";
+    import * as _ErrorHandler from "@irysius/grid-math/ErrorHandler";
+    import * as _helpers from "@irysius/grid-math/helpers";
+    import * as _Hub from "@irysius/grid-math/Hub";
+    import _HubRouter from "@irysius/grid-math/HubRouter";
+    export { IControllerRouterOptions } from "@irysius/grid-math/ControllerRouter";
+    export { IHubRouterOptions } from "@irysius/grid-math/HubRouter";
+    export let Cell: typeof _Cell;
+    export let CellCoord: typeof _CellCoord;
+    export let CoordManager: typeof _CoordManager;
+    export let GridPosition: typeof _GridPosition;
+    export let Rect: typeof _Rect;
+    export let ScreenPosition: typeof _ScreenPosition;
+    export let ScreenRect: typeof _ScreenRect;
+    export let Vector2: typeof _Vector2;
+    export let WorldPosition: typeof _WorldPosition;
+    export let WorldRect: typeof _WorldRect;
+    export let ControllerRouter: typeof _ControllerRouter;
+    export let ErrorHandler: typeof _ErrorHandler;
+    export let helpers: typeof _helpers;
+    export let Hub: typeof _Hub;
+    export let HubRouter: typeof _HubRouter;
+}
+declare module "@irysius/grid-math/Rect" {
+    export interface IRect extends ISize {
+        x: number;
+        y: number;
+        type?: string;
+    }
+    export interface ISize {
+        width: number;
+        height: number;
+    }
+    export function empty(type?: string): IRect;
+    export function fromClientBounds(v: any): IRect;
+    export function isRect(v: IRect): boolean;
+    export function areEqual(a: IRect, b: IRect, ignoreType?: boolean): boolean;
+    export function closeEnough(e: number): (a: IRect, b: IRect, ignoreType?: boolean) => boolean;
+    export function clone<T extends IRect>(v: T): T;
+}
+declare module "@irysius/grid-math/ScreenPosition" {
+    import { IVector2 } from "@irysius/grid-math/Vector2";
+    export const TYPE: 'screen';
+    export interface IScreenPosition extends IVector2 {
+        type: 'screen';
+    }
+    export function create(x: number, y: number): IScreenPosition;
+}
+declare module "@irysius/grid-math/ScreenRect" {
+    import { IRect } from "@irysius/grid-math/Rect";
+    export const TYPE: 'screen';
+    export interface IScreenRect extends IRect {
+        type: 'screen';
+    }
+    export function create(x: number, y: number, width: number, height: number): IScreenRect;
+}
+declare module "@irysius/grid-math/TestHub" {
+    import { HubTemplate } from "@irysius/grid-math/Hub";
+    interface ISend {
+        timestamp: number;
+    }
+    interface IReceive {
+        message: string;
+    }
+    export let TestHub: HubTemplate<IReceive, ISend>;
+    export default TestHub;
+}
+declare module "@irysius/grid-math/Vector2" {
+    export interface IVector2 {
+        x: number;
+        y: number;
+        type?: string;
+    }
+    export function zero(type?: string): IVector2;
+    export function unit(type?: string): IVector2;
+    export function isVector(v: IVector2): boolean;
+    export function add<T extends IVector2>(a: T, b: T): T;
+    export function subtract<T extends IVector2>(a: T, b: T): T;
+    export function multiply<T extends IVector2>(v: T, k: number): T;
+    export function negate<T extends IVector2>(v: T): T;
+    export function areEqual(a: IVector2, b: IVector2, ignoreType?: boolean): boolean;
+    export function closeEnough(e: number): (a: IVector2, b: IVector2, ignoreType?: boolean) => boolean;
+    export function clone<T extends IVector2>(v: T): T;
+}
+declare module "@irysius/grid-math/WorldPosition" {
+    import { IVector2 } from "@irysius/grid-math/Vector2";
+    export const TYPE: 'world';
+    export interface IWorldPosition extends IVector2 {
+        type: 'world';
+    }
+    export function create(x: number, y: number): IWorldPosition;
+}
+declare module "@irysius/grid-math/WorldRect" {
+    import { IRect } from "@irysius/grid-math/Rect";
+    export const TYPE: 'world';
+    export interface IWorldRect extends IRect {
+        type: 'world';
+    }
+    export function create(x: number, y: number, width: number, height: number): IWorldRect;
+}
+declare module "@irysius/grid-math/pathfinding/PathGenerator.ts" {
+    import { ICellCoord } from "@irysius/grid-math/CellCoord";
+    export function squarePath(start: ICellCoord): IterableIterator<ICellCoord>;
+    export function test(): void;
+}

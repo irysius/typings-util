@@ -6,44 +6,117 @@ function isImport(line: string) {
 function isExport(line: string) {
     return line.indexOf('export ') === 0;
 }
+function isInternalInterface(line: string) {
+    return line.indexOf('interface ') === 0;
+}
+function isInternalType(line: string) {
+    return line.indexOf('declare type ') === 0;
+}
 function isExportFrom(line: string) {
     return line.indexOf('export ') === 0 &&
         line.indexOf(' from ') > -1;
 }
 
+enum LineType {
+    None,
+    Other,
+    Import,
+    Export,
+    ExportFrom,
+    InternalInterface,
+    InternalType
+}
+
+function parseLineType(line: string): LineType {
+    if (isImport(line)) {
+        return LineType.Import;
+    }
+    if (isExportFrom(line)) {
+        return LineType.ExportFrom;
+    }
+    if (isExport(line)) {
+        return LineType.Export;
+    }
+    if (isInternalInterface(line)) {
+        return LineType.InternalInterface;
+    }
+    if (isInternalType(line)) {
+        return LineType.InternalType;
+    }
+
+    return LineType.Other;
+}
+
 interface IStatements {
     imports: string[];
     exports: string[][];
+    internal: Internal;
 }
 interface IMap<T> {
     [key: string]: T;
 }
+interface Internal {
+    interfaces: string[][];
+    types: string[];
+}
+
 
 /**
  * Categorize raw contents of a file into imports and exports
  */
 function parseStatements(lines: string[]): IStatements {
     let imports: string[] = [];
+    let internal: Internal = {
+        interfaces: [],
+        types: []
+    };
     let exports: string[][] = [];
-    let currentExport: string[] = [];
+    let prevLineType = LineType.None;
+    let currGroup: string[] = null;
+    let currGroupResolve = () => {};
     lines.forEach(line => {
         if (line) { // remove empty lines
-            if (isImport(line) || isExportFrom(line)) {
-                imports.push(line);
-            } else if (isExport(line)) {
-                exports.push(currentExport);
-                currentExport = [line];
-            } else {
-                currentExport.push(line);
+            let lineType = parseLineType(line);
+            if (currGroup != null && lineType != LineType.Other) {
+                currGroupResolve();
+                currGroup = null;
+                prevLineType = lineType;
+            }
+            switch (lineType) {
+                case LineType.Import:
+                case LineType.ExportFrom:
+                    imports.push(line);
+                    break;
+                case LineType.InternalType:
+                    internal.types.push(line);
+                    break;
+                case LineType.Export:
+                    currGroup = [line];
+                    currGroupResolve = () => { 
+                        exports.push(currGroup);
+                    }
+                    break;
+                case LineType.InternalInterface:
+                    currGroup = [line];
+                    currGroupResolve = () => { 
+                        internal.interfaces.push(currGroup); 
+                    }
+                    break;
+                case LineType.Other:
+                    if (currGroup != null) {
+                        currGroup.push(line);
+                    }
+                    break;
             }
         }
     });
 
-    exports.push(currentExport);
+    if (currGroup != null) { currGroupResolve(); }
     exports = exports.filter(x => x.length > 0);
+    internal.interfaces = internal.interfaces.filter(x => x.length > 0);
 
     return {
-        imports, exports
+        imports, exports, internal
     };
 }
 
@@ -67,11 +140,16 @@ export function moduleTemplate(ns: string, moduleMap: IMap<string>) {
     return function (name: string, fullPath: string, statements: IStatements): string[] {
         let _imports = statements.imports.map(i => _processImport(i, fullPath)).map(tab);
         let _exports = flatMap(statements.exports.map(processExport)).map(tab);
+        let internalInterfaces = flatMap(statements.internal.interfaces).map(tab);
+        let internalTypes = statements.internal.types.map(processInternalType).map(tab);
+
         let _name = name === 'index'
             ? '' : `/${name}`;
         return [
             `declare module "${ns}${_name}" {`,
                 ..._imports,
+                ...internalInterfaces,
+                ...internalTypes,
                 ..._exports,
             `}`
         ];
@@ -107,6 +185,9 @@ function processExport(exportLines: string[]) {
         firstLine.replace(' declare ', ' '),
         ...otherLines
     ];
+}
+function processInternalType(line: string) {
+    return line.replace('declare ', '');
 }
 function flatMap(v: string[][]): string[] {
     let results = [];
