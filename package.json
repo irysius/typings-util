@@ -27,6 +27,7 @@
     "README.md",
     "main.js",
     "helpers.js",
-    "index.d.ts"
+    "index.d.ts",
+    "helpers.d.ts"
   ]
 }
