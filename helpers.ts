@@ -47,7 +47,7 @@ function parseLineType(line: string): LineType {
     return LineType.Other;
 }
 
-interface IStatements {
+export interface IStatements {
     imports: string[];
     exports: string[][];
     internal: Internal;
@@ -59,7 +59,6 @@ interface Internal {
     interfaces: string[][];
     types: string[];
 }
-
 
 /**
  * Categorize raw contents of a file into imports and exports
@@ -120,6 +119,9 @@ function parseStatements(lines: string[]): IStatements {
     };
 }
 
+/**
+ * Given a path to multiple generated .d.ts, determine what the module name should be.
+ */
 export function parseModuleName(fullPath: string, root: string) {
     return PATH.relative(root, fullPath).replace('.d.ts', '');
 }

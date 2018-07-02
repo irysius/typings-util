@@ -1,6 +1,6 @@
 {
   "name": "@irysius/typings-util",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Utility functions to help assemble TypeScript declarations",
   "main": "main.js",
   "scripts": {

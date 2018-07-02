@@ -1,10 +1,10 @@
 declare module "@irysius/typings-util/helpers" {
-    interface IStatements {
+    export interface IStatements {
         imports: string[];
         exports: string[][];
         internal: Internal;
     }
-    interface IMap<T> {
+    export interface IMap<T> {
         [key: string]: T;
     }
     interface Internal {
@@ -12,6 +12,9 @@ declare module "@irysius/typings-util/helpers" {
         types: string[];
     }
 
+    /**
+     * Given a path to multiple generated .d.ts, determine what the module name should be.
+     */
     export function parseModuleName(fullPath: string, root: string): string;
 
     /**
